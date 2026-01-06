@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Library.Data;
 using Library.DomainModel.Entities;
 using Microsoft.Extensions.Logging;
+using Library.DomainModel.Validators;
 
 namespace Library.ServiceLayer
 {
@@ -24,6 +25,8 @@ namespace Library.ServiceLayer
 
         public void AdaugaCarte(Carte carte)
         {
+            CarteValidator.Validate(carte);
+
             if (string.IsNullOrWhiteSpace(carte.Titlu))
                 throw new ArgumentException("Cartea trebuie să aibă titlu.");
 
@@ -35,7 +38,7 @@ namespace Library.ServiceLayer
             {
                 foreach (var d2 in carte.Domenii)
                 {
-                    if (d1 != d2 && d1.GetStramosi().Contains(d2))
+                    if (d1 != d2 && d1.EsteStramos(d2))
                     {
                         throw new ArgumentException("Nu se pot specifica explicit domenii aflate în relația strămoș-descendent.");
                     }

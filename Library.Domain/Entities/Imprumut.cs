@@ -7,7 +7,7 @@
         public Cititor Cititor { get; set; } = null!;
         public DateTime DataImprumut { get; set; } = DateTime.Now;
         public DateTime DataReturnare { get; set; }
-        public int Prelungiri { get; set; } = 0;
+        public int NrPrelungiri { get; set; } = 0;
     }
 
 }

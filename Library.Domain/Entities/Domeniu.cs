@@ -4,16 +4,19 @@ public class Domeniu
 {
     public string Nume { get; set; } = string.Empty;
     public Domeniu? Parinte { get; set; }
-    public List<Domeniu> Subdomenii { get; set; } = new();
+    public ICollection<Domeniu> Subdomenii { get; } = new List<Domeniu>();
 
-    public IEnumerable<Domeniu> GetStramosi()
+    public bool EsteStramos(Domeniu domeniu)
     {
-        var current = Parinte;
+        var current = domeniu.Parinte;
         while (current != null)
         {
-            yield return current;
+            if (current == this)
+                return true;
+
             current = current.Parinte;
         }
+
+        return false;
     }
 }
-

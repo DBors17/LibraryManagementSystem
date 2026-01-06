@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿using System.ComponentModel.DataAnnotations;
 using Library.Data;
 using Library.DomainModel.Entities;
 using Library.ServiceLayer;

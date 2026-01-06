@@ -1,25 +1,35 @@
-﻿using FluentValidation;
+﻿using System.ComponentModel.DataAnnotations;
 using Library.DomainModel.Entities;
 
-namespace Library.Domain.Validators;
+namespace Library.DomainModel.Validators;
 
-public class CititorValidator : AbstractValidator<Cititor>
+public class CititorValidator
 {
-    public CititorValidator()
+    public void Validate(Cititor cititor)
     {
-        RuleFor(c => c.Nume)
-            .NotEmpty().WithMessage("Numele este obligatoriu.");
+        if (cititor == null)
+            throw new ValidationException("Cititor cannot be null.");
 
-        RuleFor(c => c.Prenume)
-            .NotEmpty().WithMessage("Prenumele este obligatoriu.");
+        if (string.IsNullOrWhiteSpace(cititor.Nume))
+            throw new ValidationException("Last name is required.");
 
-        RuleFor(c => c)
-            .Must(c => !string.IsNullOrWhiteSpace(c.Telefon) || !string.IsNullOrWhiteSpace(c.Email))
-            .WithMessage("Cititorul trebuie să aibă cel puțin un mijloc de contact (telefon sau email).");
+        if (string.IsNullOrWhiteSpace(cititor.Prenume))
+            throw new ValidationException("First name is required.");
 
-        RuleFor(c => c.Email)
-            .EmailAddress().When(c => !string.IsNullOrWhiteSpace(c.Email))
-            .WithMessage("Email invalid.");
+        if (string.IsNullOrWhiteSpace(cititor.Email) &&
+            string.IsNullOrWhiteSpace(cititor.Telefon))
+            throw new ValidationException("At least one contact method is required.");
+
+        if (!string.IsNullOrWhiteSpace(cititor.Email))
+        {
+            if (!cititor.Email.Contains("@") ||
+                cititor.Email.StartsWith("@") ||
+                cititor.Email.EndsWith("@"))
+                throw new ValidationException("Invalid email format.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cititor.Telefon) &&
+            cititor.Telefon.Length < 6)
+            throw new ValidationException("Invalid phone number.");
     }
 }
-

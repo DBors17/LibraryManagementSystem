@@ -2,12 +2,14 @@
 {
     public class Carte
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
         public string Titlu { get; set; } = string.Empty;
-        public List<Domeniu> Domenii { get; set; } = new();
-        public List<string> Autori { get; set; } = new();
-        public List<Editie> Editii { get; set; } = new();
-        public List<Exemplar> Exemplare { get; set; } = new();
+        public ICollection<Exemplar> Exemplare { get; } = new List<Exemplar>();
+        public ICollection<Domeniu> Domenii { get; } = new List<Domeniu>();
+
+        public int FondInitial => Exemplare.Count;
+
+        public int ExemplareDisponibile =>
+            Exemplare.Count(e => !e.EsteImprumutat && !e.DoarSalaLectura);
     }
 }
 

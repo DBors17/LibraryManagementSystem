@@ -1,34 +1,35 @@
-﻿using FluentValidation;
-using Library.Data;
-using Library.Domain.Validators;
+﻿using Library.Data;
 using Library.DomainModel.Entities;
+using Library.DomainModel.Validators;
 using Microsoft.Extensions.Logging;
+using System.ComponentModel.DataAnnotations;
 
-namespace Library.ServiceLayer;
-
-public class CititorService
+namespace Library.ServiceLayer
 {
-    private readonly IRepository<Cititor> _repo;
-    private readonly ILogger<CititorService> _logger;
-    private readonly CititorValidator _validator = new();
-
-    public CititorService(IRepository<Cititor> repo, ILogger<CititorService> logger)
+    public class CititorService
     {
-        _repo = repo;
-        _logger = logger;
-    }
+        private readonly IRepository<Cititor> _repo;
+        private readonly ILogger<CititorService> _logger;
+        private readonly CititorValidator _validator = new();
 
-    public void AdaugaCititor(Cititor cititor)
-    {
-        var result = _validator.Validate(cititor);
-        if (!result.IsValid)
+        public CititorService(IRepository<Cititor> repo, ILogger<CititorService> logger)
         {
-            _logger.LogWarning("Validarea a eșuat pentru cititor: {Errors}", result.Errors);
-            throw new ValidationException(result.Errors);
+            _repo = repo;
+            _logger = logger;
         }
 
-        _repo.Add(cititor);
-        _logger.LogInformation("Cititor adăugat: {Nume} {Prenume}", cititor.Nume, cititor.Prenume);
+        public void AdaugaCititor(Cititor cititor)
+        {
+            // VALIDARE
+            _validator.Validate(cititor);
+
+            _repo.Add(cititor);
+
+            _logger.LogInformation(
+                "Cititor adăugat: {Nume} {Prenume}",
+                cititor.Nume,
+                cititor.Prenume
+            );
+        }
     }
 }
-

@@ -2,8 +2,7 @@
 {
     public class Exemplar
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public bool DoarSalaLectura { get; set; }
         public bool EsteImprumutat { get; set; }
+        public bool DoarSalaLectura { get; set; }
     }
 }
