@@ -1327,5 +1327,119 @@ namespace Library.TestServiceLayer
 
             Assert.Equal(2, repo.GetAll().Count());
         }
+
+        [Fact]
+        public void ImprumutaCarti_OListaCuOCarte_Trece()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+            var carte = new Carte { Titlu = "C1", Exemplare = { new Exemplar() } };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte });
+        }
+
+        [Fact]
+        public void ImprumutaCarti_DouaCarti_DomeniiDiferite_Trece()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+
+            var carte1 = new Carte
+            {
+                Titlu = "C1",
+                Domenii = { new Domeniu { Nume = "IT" } },
+                Exemplare = { new Exemplar() }
+            };
+
+            var carte2 = new Carte
+            {
+                Titlu = "C2",
+                Domenii = { new Domeniu { Nume = "BIO" } },
+                Exemplare = { new Exemplar() }
+            };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte1, carte2 });
+        }
+
+        [Fact]
+        public void ImprumutaCarti_TreiCarti_DouaDomenii_Trece()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+
+            var d1 = new Domeniu { Nume = "IT" };
+            var d2 = new Domeniu { Nume = "BIO" };
+
+            var carti = new List<Carte>
+    {
+        new Carte { Titlu = "C1", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C2", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C3", Domenii = { d2 }, Exemplare = { new Exemplar() } }
+    };
+
+            service.ImprumutaCarti(cititor, carti);
+        }
+
+        [Fact]
+        public void ImprumutaCarti_DomeniiExactMinim_Trece()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ana", Prenume = "Pop" };
+
+            var domeniu = new Domeniu { Nume = "IT" };
+
+            var carti = new List<Carte>
+    {
+        new Carte { Titlu = "C1", Domenii = { domeniu }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C2", Domenii = { domeniu }, Exemplare = { new Exemplar() } }
+    };
+
+            service.ImprumutaCarti(cititor, carti);
+        }
+
+        [Fact]
+        public void ImprumutaCarti_ExemplareMultiple_AlegeUnulDisponibil()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ana", Prenume = "Pop" };
+
+            var carte = new Carte
+            {
+                Titlu = "Carte",
+                Exemplare =
+        {
+            new Exemplar { EsteImprumutat = true },
+            new Exemplar { EsteImprumutat = false }
+        }
+            };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte });
+        }
+
+        [Fact]
+        public void ImprumutaCarti_ExemplareCuSalaSiNormal_ImprumutaNormal()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor { Nume = "Ana", Prenume = "Pop" };
+
+            var carte = new Carte
+            {
+                Titlu = "Carte",
+                Exemplare =
+        {
+            new Exemplar { DoarSalaLectura = true },
+            new Exemplar { DoarSalaLectura = false }
+        }
+            };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte });
+        }
+
     }
 }

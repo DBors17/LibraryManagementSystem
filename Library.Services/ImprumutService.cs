@@ -179,7 +179,8 @@ public class ImprumutService
                 Carte = carte,
                 Cititor = cititor,
                 DataImprumut = DateTime.Now,
-                DataReturnare = DateTime.Now.AddDays(14)
+                //DataReturnare = DateTime.Now.AddDays(14)
+                DataReturnare = null
             };
 
             _repo.Add(imprumut);
@@ -189,6 +190,9 @@ public class ImprumutService
 
     public void PrelungesteImprumut(Imprumut imprumut, int zile = 14)
     {
+        if (imprumut == null)
+            throw new ArgumentException("Imprumut null");
+
         int limEf = imprumut.Cititor.EsteBibliotecar ? LIM * 2 : LIM;
         if (imprumut.NrPrelungiri >= limEf)
         {
@@ -198,7 +202,11 @@ public class ImprumutService
             );
         }
 
-        imprumut.DataReturnare = imprumut.DataReturnare.AddDays(zile);
+        if (imprumut.DataReturnare == null)
+            imprumut.DataReturnare = DateTime.Now.AddDays(zile);
+        else
+            imprumut.DataReturnare = imprumut.DataReturnare.Value.AddDays(zile);
+
         imprumut.NrPrelungiri++;
 
         _logger.LogInformation(

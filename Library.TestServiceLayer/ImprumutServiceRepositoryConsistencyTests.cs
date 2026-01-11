@@ -214,4 +214,158 @@ public class ImprumutServiceRepositoryConsistencyTests
 
         Assert.Equal(121, repo.GetAll().Count());
     }
+
+    [Fact]
+    public void Repo_AdaugaExactUnImprumut_PentruOCarte()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        repo.Verify(r => r.Add(It.IsAny<Imprumut>()), Times.Once);
+    }
+
+    [Fact]
+    public void Repo_AdaugaExactTreiImprumuturi_PentruTreiCarti()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+
+        var d1 = new Domeniu { Nume = "IT" };
+        var d2 = new Domeniu { Nume = "BIO" };
+
+        var carti = new List<Carte>
+    {
+        new Carte { Titlu = "C1", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C2", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C3", Domenii = { d2 }, Exemplare = { new Exemplar() } }
+    };
+
+        service.ImprumutaCarti(cititor, carti);
+
+        repo.Verify(r => r.Add(It.IsAny<Imprumut>()), Times.Exactly(3));
+    }
+
+    [Fact]
+    public void Repo_ImprumutDataEsteAstazi()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Imprumut capturat = null!;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturat = i);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.Equal(DateTime.Today, capturat.DataImprumut.Date);
+    }
+
+    [Fact]
+    public void Repo_CarteEsteAceeasiReferinta()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Carte capturata = null!;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturata = i.Carte);
+
+        var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.Same(carte, capturata);
+    }
+
+    [Fact]
+    public void Repo_CititorEsteAceeasiReferinta()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Cititor capturat = null!;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturat = i.Cititor);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.Same(cititor, capturat);
+    }
+
+    [Fact]
+    public void Repo_ImprumutNou_DataReturnare_EsteNull()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Imprumut capturat = null;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturat = i);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C1", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.Null(capturat.DataReturnare);
+    }
+
+    [Fact]
+    public void Repo_ImprumutNou_NrPrelungiri_EsteZero()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Imprumut capturat = null;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturat = i);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C1", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.Equal(0, capturat.NrPrelungiri);
+    }
+
+    [Fact]
+    public void Repo_DataImprumut_NuEsteInViitor()
+    {
+        var repo = new Mock<IRepository<Imprumut>>();
+        var service = CreateService(repo.Object);
+
+        Imprumut capturat = null;
+        repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
+            .Callback<Imprumut>(i => capturat = i);
+
+        var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
+        var carte = new Carte { Titlu = "C1", Exemplare = { new Exemplar() } };
+
+        service.ImprumutaCarti(cititor, new List<Carte> { carte });
+
+        Assert.True(capturat.DataImprumut <= DateTime.Now);
+    }
+
+    [Fact]
+    public void PrelungesteImprumut_Null_AruncaArgumentException()
+    {
+        var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+        Assert.Throws<ArgumentException>(() =>
+            service.PrelungesteImprumut(null));
+    }
 }

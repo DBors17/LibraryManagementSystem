@@ -1,11 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// <copyright file="CititorTests.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
+
+namespace Library.TestDomainModel;
+
+using System.ComponentModel.DataAnnotations;
 using Library.DomainModel.Entities;
 using Library.DomainModel.Validators;
 using Xunit;
 
-namespace Library.TestDomainModel
-{
-    public class CititorTests
+/// <summary>
+/// Tests for <see cref="Cititor"/> domain model.
+/// </summary>
+public class CititorTests
     {
         private readonly CititorValidator validator = new();
 
@@ -16,7 +23,7 @@ namespace Library.TestDomainModel
             {
                 Nume = "Popescu",
                 Prenume = "Ion",
-                Email = "ion.popescu@test.com"
+                Email = "ion.popescu@test.com",
             };
 
             var ex = Record.Exception(() => validator.Validate(cititor));
@@ -244,7 +251,4 @@ namespace Library.TestDomainModel
             var ex = Record.Exception(() => validator.Validate(cititor));
             Assert.Null(ex);
         }
-
-
-    }
 }

@@ -1,22 +1,53 @@
-﻿namespace Library.DomainModel.Entities;
+﻿// <copyright file="Domeniu.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
 
-public class Domeniu
+namespace Library.DomainModel.Entities
 {
-    public string Nume { get; set; } = string.Empty;
-    public Domeniu? Parinte { get; set; }
-    public ICollection<Domeniu> Subdomenii { get; } = new List<Domeniu>();
+    using System.Collections.Generic;
 
-    public bool EsteStramos(Domeniu domeniu)
+    /// <summary>
+    /// Represents a domain/category of books.
+    /// </summary>
+    public class Domeniu
     {
-        var current = domeniu.Parinte;
-        while (current != null)
+        /// <summary>
+        /// Gets or sets the name of the domain.
+        /// </summary>
+        public string Nume { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the parent domain.
+        /// </summary>
+        public Domeniu? Parinte { get; set; }
+
+        /// <summary>
+        /// Gets the collection of subdomains.
+        /// </summary>
+        public ICollection<Domeniu> Subdomenii { get; } = new List<Domeniu>();
+
+        /// <summary>
+        /// Determines whether the current domain is an ancestor of the specified domain.
+        /// </summary>
+        /// <param name="domeniu">The domain to check.</param>
+        /// <returns>
+        /// True if the current domain is an ancestor; otherwise, false.
+        /// </returns>
+        public bool EsteStramos(Domeniu domeniu)
         {
-            if (current == this)
-                return true;
+            Domeniu? current = domeniu.Parinte;
 
-            current = current.Parinte;
+            while (current != null)
+            {
+                if (current == this)
+                {
+                    return true;
+                }
+
+                current = current.Parinte;
+            }
+
+            return false;
         }
-
-        return false;
     }
 }

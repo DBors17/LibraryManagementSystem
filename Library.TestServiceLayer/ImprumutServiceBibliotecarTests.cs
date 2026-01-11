@@ -483,5 +483,114 @@ namespace Library.TestServiceLayer
             );
         }
 
+        [Fact]
+        public void Bibliotecar_PoateImprumutaChiarCuNCZZero()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object, ncz: 0);
+
+            var cititor = new Cititor
+            {
+                Nume = "Ana",
+                Prenume = "Pop",
+                EsteBibliotecar = true
+            };
+
+            var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte });
+        }
+
+        [Fact]
+        public void Bibliotecar_NuIgnoraDisponibilitateCarte()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor
+            {
+                Nume = "Ana",
+                Prenume = "Pop",
+                EsteBibliotecar = true
+            };
+
+            var carte = new Carte
+            {
+                Titlu = "Indisponibila",
+                Exemplare = { new Exemplar { EsteImprumutat = true } }
+            };
+
+            Assert.Throws<InvalidOperationException>(() =>
+                service.ImprumutaCarti(cititor, new List<Carte> { carte })
+            );
+        }
+
+        [Fact]
+        public void Bibliotecar_DomeniiDiferite_NuAfecteazaLimitaD()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor
+            {
+                Nume = "Ana",
+                Prenume = "Pop",
+                EsteBibliotecar = true
+            };
+
+            var carti = new List<Carte>
+    {
+        new Carte { Titlu = "C1", Domenii = { new Domeniu { Nume = "IT" } }, Exemplare = { new Exemplar() } },
+        new Carte { Titlu = "C2", Domenii = { new Domeniu { Nume = "BIO" } }, Exemplare = { new Exemplar() } }
+    };
+
+            service.ImprumutaCarti(cititor, carti);
+        }
+
+        [Fact]
+        public void Bibliotecar_ImprumutFaraIstoric_Trece()
+        {
+            var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+
+            var cititor = new Cititor
+            {
+                Nume = "Ana",
+                Prenume = "Pop",
+                EsteBibliotecar = true
+            };
+
+            var carte = new Carte { Titlu = "Carte", Exemplare = { new Exemplar() } };
+
+            service.ImprumutaCarti(cititor, new List<Carte> { carte });
+        }
+
+        [Fact]
+        public void Repo_Cu10Carti_Bibliotecar_Functioneaza()
+        {
+            var repo = new Mock<IRepository<Imprumut>>();
+            var service = CreateService(repo.Object);
+
+            var cititor = new Cititor
+            {
+                Nume = "Ion",
+                Prenume = "Pop",
+                EsteBibliotecar = true
+            };
+
+            var d1 = new Domeniu { Nume = "IT" };
+            var d2 = new Domeniu { Nume = "BIO" };
+
+            var carti = Enumerable.Range(1, 10)
+                .Select(i => new Carte
+                {
+                    Titlu = $"C{i}",
+                    Domenii = { i % 2 == 0 ? d1 : d2 },
+                    Exemplare = { new Exemplar() }
+                })
+                .ToList();
+
+            service.ImprumutaCarti(cititor, carti);
+
+            repo.Verify(r => r.Add(It.IsAny<Imprumut>()), Times.Exactly(10));
+        }
+
+
     }
 }
