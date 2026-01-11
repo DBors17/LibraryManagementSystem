@@ -1,35 +1,52 @@
-﻿using Library.Data;
+﻿// <copyright file="CititorService.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
+
+namespace Library.ServiceLayer;
+
+using System;
+using Library.Data;
 using Library.DomainModel.Entities;
 using Library.DomainModel.Validators;
 using Microsoft.Extensions.Logging;
-using System.ComponentModel.DataAnnotations;
 
-namespace Library.ServiceLayer
+/// <summary>
+/// Provides business logic operations related to <see cref="Cititor"/> entities.
+/// </summary>
+public class CititorService
 {
-    public class CititorService
+    private readonly IRepository<Cititor> repo;
+    private readonly ILogger<CititorService> logger;
+    private readonly CititorValidator validator;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CititorService"/> class.
+    /// </summary>
+    /// <param name="repo">Repository used to persist readers.</param>
+    /// <param name="logger">Logger instance.</param>
+    public CititorService(IRepository<Cititor> repo, ILogger<CititorService> logger)
     {
-        private readonly IRepository<Cititor> _repo;
-        private readonly ILogger<CititorService> _logger;
-        private readonly CititorValidator _validator = new();
+        this.repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.validator = new CititorValidator();
+    }
 
-        public CititorService(IRepository<Cititor> repo, ILogger<CititorService> logger)
-        {
-            _repo = repo;
-            _logger = logger;
-        }
+    /// <summary>
+    /// Adds a new reader to the repository after validation.
+    /// </summary>
+    /// <param name="cititor">The reader to be added.</param>
+    /// <exception cref="ValidationException">
+    /// Thrown when the reader fails validation.
+    /// </exception>
+    public void AdaugaCititor(Cititor cititor)
+    {
+        this.validator.Validate(cititor);
 
-        public void AdaugaCititor(Cititor cititor)
-        {
-            // VALIDARE
-            _validator.Validate(cititor);
+        this.repo.Add(cititor);
 
-            _repo.Add(cititor);
-
-            _logger.LogInformation(
-                "Cititor adăugat: {Nume} {Prenume}",
-                cititor.Nume,
-                cititor.Prenume
-            );
-        }
+        this.logger.LogInformation(
+            "Cititor adaugat: {Nume} {Prenume}",
+            cititor.Nume,
+            cititor.Prenume);
     }
 }

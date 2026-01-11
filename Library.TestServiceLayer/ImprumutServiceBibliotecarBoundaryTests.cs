@@ -1,51 +1,21 @@
-﻿using Library.Data;
+﻿// <copyright file="ImprumutServiceBibliotecarBoundaryTests.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
+
+namespace Library.TestServiceLayer;
+
+using Library.Data;
 using Library.DomainModel.Entities;
 using Library.ServiceLayer;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Library.TestServiceLayer;
-
+/// <summary>
+/// Tests for ImprumutService boundary conditions for bibliotecar cititor.
+/// </summary>
 public class ImprumutServiceBibliotecarBoundaryTests
 {
-    private ImprumutService CreateService(
-        IRepository<Imprumut> repo,
-        int ncz = 2,
-        int nmc = 2,
-        int lim = 2,
-        int c = 5,
-        int perDays = 30,
-        int deltaDays = 30,
-        int d = 2,
-        int l = 6,
-        int persimp = 2)
-    {
-        var carteService = new CarteService(
-            new Mock<IRepository<Carte>>().Object,
-            new Mock<ILogger<CarteService>>().Object);
-
-        var logger = new Mock<ILogger<ImprumutService>>();
-
-        return new ImprumutService(
-            repo, logger.Object, carteService,
-            nmc: nmc, c: 5, d: d, ncz: ncz,
-            deltaDays: deltaDays, perDays: perDays,
-            l: l, persimp: persimp);
-    }
-
-    private static Carte CarteDisponibila(string titlu, Domeniu? domeniu = null)
-    {
-        var c = new Carte { Titlu = titlu };
-        if (domeniu != null) c.Domenii.Add(domeniu);
-        c.Exemplare.Add(new Exemplar { DoarSalaLectura = false });
-        return c;
-    }
-
-    private static Cititor Bibliotecar()
-        => new() { Nume = "Ana", Prenume = "Pop", EsteBibliotecar = true };
-
-    // 1️⃣ Exact NCZ → TRECE
     [Fact]
     public void Bibliotecar_ExactNCZ_Trece()
     {
@@ -258,12 +228,84 @@ public class ImprumutServiceBibliotecarBoundaryTests
     public void Bibliotecar_FaraIstoric_Trece()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
         var cititor = Bibliotecar();
 
-        service.ImprumutaCarti(cititor,
-            new() { CarteDisponibila("Noua") });
+        service.ImprumutaCarti(
+            cititor,
+            new () { CarteDisponibila("Noua") });
 
         Assert.Single(repo.GetAll());
     }
+
+    /// <summary>
+    /// Creates an ImprumutService with specified parameters.
+    /// </summary>
+    /// <param name="repo"></param>
+    /// <param name="ncz"></param>
+    /// <param name="nmc"></param>
+    /// <param name="lim"></param>
+    /// <param name="c"></param>
+    /// <param name="perDays"></param>
+    /// <param name="deltaDays"></param>
+    /// <param name="d"></param>
+    /// <param name="l"></param>
+    /// <param name="persimp"></param>
+    /// <returns></returns>
+    private ImprumutService CreateService(
+        IRepository<Imprumut> repo,
+        int ncz = 2,
+        int nmc = 2,
+        int lim = 2,
+        int c = 5,
+        int perDays = 30,
+        int deltaDays = 30,
+        int d = 2,
+        int l = 6,
+        int persimp = 2)
+    {
+        var carteService = new CarteService(
+            new Mock<IRepository<Carte>>().Object,
+            new Mock<ILogger<CarteService>>().Object);
+
+        var logger = new Mock<ILogger<ImprumutService>>();
+
+        return new ImprumutService(
+            repo,
+            logger.Object,
+            carteService,
+            nmc: nmc,
+            c: 5,
+            d: d,
+            ncz: ncz,
+            deltaDays: deltaDays,
+            perDays: perDays,
+            l: l,
+            persimp: persimp);
+    }
+
+    /// <summary>
+    /// Creates a book with at least one available exemplar.
+    /// </summary>
+    private static Carte CarteDisponibila(string titlu, Domeniu? domeniu = null)
+    {
+        var c = new Carte { Titlu = titlu };
+        if (domeniu != null)
+        {
+            c.Domenii.Add(domeniu);
+        }
+
+        c.Exemplare.Add(new Exemplar { DoarSalaLectura = false });
+        return c;
+    }
+
+    /// <summary>
+    /// Creates a bibliotecar cititor.
+    /// </summary>
+    private static Cititor Bibliotecar() => new()
+    {
+        Nume = "Ana",
+        Prenume = "Pop",
+        EsteBibliotecar = true,
+    };
 }

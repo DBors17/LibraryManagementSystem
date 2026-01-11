@@ -1,24 +1,46 @@
-﻿using Library.Data;
+﻿// <copyright file="FakeRepository.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
+
+namespace Library.TestServiceLayer;
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using Library.Data;
 
-public class FakeRepository<T> : IRepository<T> where T : class
-{
-    private readonly List<T> _data = new();
-
-    public void Add(T entity)
+/// <summary>
+/// A fake implementation of <see cref="IRepository{T}"/> for testing purposes.
+/// </summary>
+/// <typeparam name="T">The type of entity.</typeparam>
+public class FakeRepository<T> : IRepository<T>
+        where T : class
     {
-        _data.Add(entity);
-    }
+        private readonly List<T> data = new ();
 
-    public IEnumerable<T> GetAll()
-    {
-        return _data;
-    }
+        /// <summary>
+        /// Adds an entity to the repository.
+        /// </summary>
+        /// <param name="entity">The entity to add.</param>
+        public void Add(T entity)
+        {
+            this.data.Add(entity);
+        }
 
-    public void Remove(T entity)
-    {
-        _data.Remove(entity);
-    }
+        /// <summary>
+        /// Gets all entities in the repository.
+        /// </summary>
+        /// <returns>A collection of entities.</returns>
+        public IEnumerable<T> GetAll()
+        {
+            return this.data;
+        }
+
+        /// <summary>
+        /// Removes an entity from the repository.
+        /// </summary>
+        /// <param name="entity">The entity to remove.</param>
+        public void Remove(T entity)
+        {
+            this.data.Remove(entity);
+        }
 }

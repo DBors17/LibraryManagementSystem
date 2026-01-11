@@ -1,99 +1,139 @@
-﻿using Library.Data;
-using Library.DomainModel.Entities;
-using Library.DomainModel.Validators;
-using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿// <copyright file="ImprumutService.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
 
 namespace Library.ServiceLayer;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Library.Data;
+using Library.DomainModel.Entities;
+using Microsoft.Extensions.Logging;
+
+/// <summary>
+/// Provides business logic for managing book loans.
+/// </summary>
 public class ImprumutService
 {
-    private readonly IRepository<Imprumut> _repo;
-    private readonly ILogger<ImprumutService> _logger;
-    private readonly CarteService _carteService;
+    private readonly IRepository<Imprumut> repo;
+    private readonly ILogger<ImprumutService> logger;
+    private readonly CarteService carteService;
 
-    private readonly int NMC;
-    private readonly int C;
-    private readonly int D;
-    private readonly int NCZ;
-    private readonly int LIM;
-    private readonly TimeSpan DELTA;
-    private readonly TimeSpan PER;
-    private readonly int L;
-    private readonly int PERSIMP;
+    private readonly int nmc;
+    private readonly int c;
+    private readonly int d;
+    private readonly int ncz;
+    private readonly int lim;
+    private readonly TimeSpan delta;
+    private readonly TimeSpan per;
+    private readonly int l;
+    private readonly int persimp;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ImprumutService"/> class.
+    /// </summary>
+    /// <param name="repo">Repository used to store loans.</param>
+    /// <param name="logger">Logger instance.</param>
+    /// <param name="carteService">Service used for book availability checks.</param>
+    /// <param name="nmc">Maximum number of loans allowed in a period.</param>
+    /// <param name="c">Maximum number of books per request.</param>
+    /// <param name="d">Maximum number of books per domain.</param>
+    /// <param name="ncz">Maximum number of books per day.</param>
+    /// <param name="lim">Maximum number of extensions.</param>
+    /// <param name="deltaDays">Minimum days between re-loaning the same book.</param>
+    /// <param name="perDays">Period length in days for NMC rule.</param>
+    /// <param name="l">Number of months used for domain limitation.</param>
+    /// <param name="persimp">Maximum books a librarian can lend per day.</param>
     public ImprumutService(
         IRepository<Imprumut> repo,
         ILogger<ImprumutService> logger,
         CarteService carteService,
-        int nmc = 10, int c = 5, int d = 3, int ncz = 4, int lim = 2,
-        int deltaDays = 30, int perDays = 180, int l = 6, int persimp = 10)
+        int nmc = 10,
+        int c = 5,
+        int d = 3,
+        int ncz = 4,
+        int lim = 2,
+        int deltaDays = 30,
+        int perDays = 180,
+        int l = 6,
+        int persimp = 10)
     {
-        _repo = repo;
-        _logger = logger;
-        _carteService = carteService;
-        NMC = nmc;
-        C = c; D = d; NCZ = ncz; LIM = lim;
-        PERSIMP = persimp;
-        DELTA = TimeSpan.FromDays(deltaDays);
-        PER = TimeSpan.FromDays(perDays);
-        L = l;
+        this.repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.carteService = carteService ?? throw new ArgumentNullException(nameof(carteService));
+
+        this.nmc = nmc;
+        this.c = c;
+        this.d = d;
+        this.ncz = ncz;
+        this.lim = lim;
+        this.l = l;
+        this.persimp = persimp;
+
+        this.delta = TimeSpan.FromDays(deltaDays);
+        this.per = TimeSpan.FromDays(perDays);
     }
 
+    /// <summary>
+    /// Creates new loans for the specified reader and list of books.
+    /// </summary>
+    /// <param name="cititor">Reader requesting the loans.</param>
+    /// <param name="carti">Books to be loaned.</param>
     public void ImprumutaCarti(Cititor cititor, List<Carte> carti)
     {
-        int nmcEf = cititor.EsteBibliotecar ? NMC * 2 : NMC;
-        int cEf = cititor.EsteBibliotecar ? C * 2 : C;
-        int dEf = cititor.EsteBibliotecar ? D * 2 : D;
-        int limEf = cititor.EsteBibliotecar ? LIM * 2 : LIM;
+        if (cititor == null)
+        {
+            throw new ArgumentNullException(nameof(cititor));
+        }
+
+        if (carti == null)
+        {
+            throw new ArgumentNullException(nameof(carti));
+        }
+
+        int nmcEf = cititor.EsteBibliotecar ? this.nmc * 2 : this.nmc;
+        int cEf = cititor.EsteBibliotecar ? this.c * 2 : this.c;
+        int dEf = cititor.EsteBibliotecar ? this.d * 2 : this.d;
 
         TimeSpan deltaEf = cititor.EsteBibliotecar
-            ? TimeSpan.FromTicks(DELTA.Ticks / 2)
-            : DELTA;
+            ? TimeSpan.FromTicks(this.delta.Ticks / 2)
+            : this.delta;
 
         TimeSpan perEf = cititor.EsteBibliotecar
-            ? TimeSpan.FromTicks(PER.Ticks / 2)
-            : PER;
+            ? TimeSpan.FromTicks(this.per.Ticks / 2)
+            : this.per;
 
-        // toate împrumuturile existente
-        var toateImprumuturile = _repo.GetAll()
+        var toateImprumuturile = this.repo
+            .GetAll()
             .Where(i => i.Cititor.Id == cititor.Id)
             .ToList();
 
-        // regula NCZ – max cărți pe zi
         var imprumuturiAzi = toateImprumuturile
-            .Where(i => i.DataImprumut.Date == DateTime.Today)
-            .Count();
+            .Count(i => i.DataImprumut.Date == DateTime.Today);
 
-                if (!cititor.EsteBibliotecar &&
-                    imprumuturiAzi + carti.Count > NCZ)
-                {
-                    throw new InvalidOperationException(
-                        $"Nu se pot împrumuta mai mult de {NCZ} cărți într-o zi."
-                    );
-                }
+        if (!cititor.EsteBibliotecar && imprumuturiAzi + carti.Count > this.ncz)
+        {
+            throw new InvalidOperationException(
+                $"Nu se pot imprumuta mai mult de {this.ncz} carti intr-o zi.");
+        }
 
-                if (cititor.EsteBibliotecar &&
-                    imprumuturiAzi + carti.Count > PERSIMP)
-                {
-                    throw new InvalidOperationException(
-                        $"Un bibliotecar nu poate acorda mai mult de {PERSIMP} cărți într-o zi."
-                    );
-                }
+        if (cititor.EsteBibliotecar && imprumuturiAzi + carti.Count > this.persimp)
+        {
+            throw new InvalidOperationException(
+                $"Un bibliotecar nu poate acorda mai mult de {this.persimp} carti intr-o zi.");
+        }
 
-        // filtrăm doar perioada PER
         var imprumuturiInPerioada = toateImprumuturile
-            .Where(i => i.DataImprumut >= DateTime.Now - perEf)
-            .Count();
+            .Count(i => i.DataImprumut >= DateTime.Now - perEf);
 
         if (imprumuturiInPerioada + carti.Count > nmcEf)
+        {
             throw new InvalidOperationException(
-                $"Cititorul {cititor.Nume} are deja {imprumuturiInPerioada} împrumuturi " +
-                $"în ultimele {PER.Days} zile. Limita este {NMC}."
-            );
+                $"Cititorul {cititor.Nume} are deja {imprumuturiInPerioada} imprumuturi in perioada analizata.");
+        }
 
-        // regula DELTA - aceeași carte nu poate fi reîmprumutată prea des
-        foreach (var carte in carti)
+        foreach (Carte carte in carti)
         {
             var ultimulImprumut = toateImprumuturile
                 .Where(i => i.Carte == carte)
@@ -104,116 +144,116 @@ public class ImprumutService
                 DateTime.Now - ultimulImprumut.DataImprumut < deltaEf)
             {
                 throw new InvalidOperationException(
-                    $"Cartea {carte.Titlu} a fost împrumutată recent și nu poate fi reîmprumutată încă."
-                );
+                    $"Cartea {carte.Titlu} a fost imprumutata recent.");
             }
         }
 
-        // regula D + L – max D cărți din același domeniu în ultimele L luni
-        var limitaData = DateTime.Now.AddMonths(-L);
+        var limitaData = DateTime.Now.AddMonths(-this.l);
 
-        var imprumuturiInUltimeleLuni = toateImprumuturile
+        var imprumuturiRecente = toateImprumuturile
             .Where(i => i.DataImprumut >= limitaData)
             .ToList();
 
-        // pentru fiecare domeniu implicat în cererea curentă
-        foreach (var domeniu in carti.SelectMany(c => c.Domenii).Distinct())
+        foreach (Domeniu domeniu in carti.SelectMany(carte => carte.Domenii).Distinct())
         {
-            // numărăm câte cărți din acest domeniu au fost deja împrumutate
-            int dejaImprumutate = imprumuturiInUltimeleLuni.Count(i =>
-                i.Carte.Domenii.Any(d =>
-                    d == domeniu ||
-                    d.EsteStramos(domeniu) ||
-                    domeniu.EsteStramos(d)
-                )
-            );
+            int dejaImprumutate = imprumuturiRecente.Count(i =>
+                i.Carte.Domenii.Any(d1 =>
+                    d1 == domeniu ||
+                    d1.EsteStramos(domeniu) ||
+                    domeniu.EsteStramos(d1)));
 
-            // câte din cererea curentă sunt din acest domeniu
-            int cerereCurenta = carti.Count(c =>
-                c.Domenii.Any(d =>
-                    d == domeniu ||
-                    d.EsteStramos(domeniu) ||
-                    domeniu.EsteStramos(d)
-                )
-            );
+            int cerereCurenta = carti.Count(carte =>
+                carte.Domenii.Any(d1 =>
+                    d1 == domeniu ||
+                    d1.EsteStramos(domeniu) ||
+                    domeniu.EsteStramos(d1)));
 
             if (dejaImprumutate + cerereCurenta > dEf)
             {
                 throw new InvalidOperationException(
-                    $"Limita de {D} cărți din domeniul {domeniu.Nume} " +
-                    $"în ultimele {L} luni a fost depășită."
-                );
+                    $"Limita de {this.d} carti pentru domeniul {domeniu.Nume} a fost depasita.");
             }
         }
 
-
-        // regula C (max cărți per cerere)
         if (carti.Count > cEf)
-            throw new ArgumentException($"Nu se pot împrumuta mai mult de {C} cărți într-o cerere.");
+        {
+            throw new ArgumentException(
+                $"Nu se pot imprumuta mai mult de {this.c} carti intr-o cerere.");
+        }
 
-        // regula domenii
         if (carti.Count >= 3)
         {
-            var domeniiDistincte = carti
-                .SelectMany(c => c.Domenii)
-                .Select(d => d.Nume)
+            int domeniiDistincte = carti
+                .SelectMany(carte => carte.Domenii)
+                .Select(domeniu => domeniu.Nume)
                 .Distinct()
                 .Count();
 
             if (domeniiDistincte < 2)
-                throw new ArgumentException("Dacă se împrumută ≥3 cărți, trebuie să fie din ≥2 domenii diferite.");
+            {
+                throw new ArgumentException(
+                    "Pentru 3 sau mai multe carti sunt necesare cel putin 2 domenii diferite.");
+            }
         }
 
-        // verificăm cărțile disponibile
-        foreach (var carte in carti)
+        foreach (Carte carte in carti)
         {
-            if (!_carteService.PoateFiImprumutata(carte))
-                throw new InvalidOperationException($"Cartea {carte.Titlu} nu poate fi împrumutată.");
+            if (!this.carteService.PoateFiImprumutata(carte))
+            {
+                throw new InvalidOperationException(
+                    $"Cartea {carte.Titlu} nu poate fi imprumutata.");
+            }
         }
 
-        // adăugăm împrumuturi noi
-        foreach (var carte in carti)
+        foreach (Carte carte in carti)
         {
             var imprumut = new Imprumut
             {
                 Carte = carte,
                 Cititor = cititor,
                 DataImprumut = DateTime.Now,
-                //DataReturnare = DateTime.Now.AddDays(14)
-                DataReturnare = null
+                DataReturnare = null,
             };
 
-            _repo.Add(imprumut);
-            _logger.LogInformation("Cartea {Titlu} a fost împrumutată de {Cititor}.", carte.Titlu, cititor.Nume);
+            this.repo.Add(imprumut);
+
+            this.logger.LogInformation(
+                "Cartea {Titlu} a fost imprumutata de {Cititor}.",
+                carte.Titlu,
+                cititor.Nume);
         }
     }
 
+    /// <summary>
+    /// Extends the return date of an existing loan.
+    /// </summary>
+    /// <param name="imprumut">Loan to be extended.</param>
+    /// <param name="zile">Number of days to extend the loan.</param>
     public void PrelungesteImprumut(Imprumut imprumut, int zile = 14)
     {
         if (imprumut == null)
-            throw new ArgumentException("Imprumut null");
+        {
+            throw new ArgumentNullException(nameof(imprumut));
+        }
 
-        int limEf = imprumut.Cititor.EsteBibliotecar ? LIM * 2 : LIM;
+        int limEf = imprumut.Cititor.EsteBibliotecar ? this.lim * 2 : this.lim;
+
         if (imprumut.NrPrelungiri >= limEf)
         {
             throw new InvalidOperationException(
-                $"Împrumutul pentru cartea {imprumut.Carte.Titlu} " +
-                $"nu mai poate fi prelungit. Limita este {LIM}."
-            );
+                $"Imprumutul pentru cartea {imprumut.Carte.Titlu} nu mai poate fi prelungit.");
         }
 
-        if (imprumut.DataReturnare == null)
-            imprumut.DataReturnare = DateTime.Now.AddDays(zile);
-        else
-            imprumut.DataReturnare = imprumut.DataReturnare.Value.AddDays(zile);
+        imprumut.DataReturnare = imprumut.DataReturnare == null
+            ? DateTime.Now.AddDays(zile)
+            : imprumut.DataReturnare.Value.AddDays(zile);
 
         imprumut.NrPrelungiri++;
 
-        _logger.LogInformation(
-            "Împrumutul pentru cartea {Titlu} a fost prelungit ({NrPrelungiri}/{LIM}).",
+        this.logger.LogInformation(
+            "Imprumutul pentru cartea {Titlu} a fost prelungit ({NrPrelungiri}/{Limita}).",
             imprumut.Carte.Titlu,
             imprumut.NrPrelungiri,
-            LIM
-        );
+            this.lim);
     }
 }
