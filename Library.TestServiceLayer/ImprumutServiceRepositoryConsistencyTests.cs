@@ -1,45 +1,37 @@
-﻿using Library.Data;
+﻿// <copyright file="ImprumutServiceRepositoryConsistencyTests.cs" company="Transilvania University of Brasov">
+// Copyright (c) 2025 Bors Dorin. All rights reserved.
+// </copyright>
+
+namespace Library.TestServiceLayer;
+
+using Library.Data;
 using Library.DomainModel.Entities;
 using Library.ServiceLayer;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Library.TestServiceLayer;
-
+/// <summary>
+/// Tests to ensure consistency between <see cref="ImprumutService"/>
+/// and the underlying <see cref="IRepository{Imprumut}"/> implementation.
+/// </summary>
 public class ImprumutServiceRepositoryConsistencyTests
 {
-    private ImprumutService CreateService(IRepository<Imprumut> repo)
-    {
-        var carteService = new CarteService(
-            new FakeRepository<Carte>(),
-            new LoggerFactory().CreateLogger<CarteService>()
-        );
-
-        var logger = new LoggerFactory().CreateLogger<ImprumutService>();
-
-        return new ImprumutService(repo, logger, carteService);
-    }
-
-    private Carte CarteDisponibila(string titlu)
-    {
-        var c = new Carte { Titlu = titlu };
-        c.Exemplare.Add(new Exemplar { EsteImprumutat = false, DoarSalaLectura = false });
-        return c;
-    }
-
-    // 2️⃣ DataImprumut este azi
+    /// <summary>
+    /// Verifies that the loan date stored in the repository
+    /// is set to the current day.
+    /// </summary>
     [Fact]
     public void Repo_DataImprumut_EsteAstazi()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ion" };
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("C1")
+            this.CarteDisponibila("C1"),
         });
 
         var imprumut = repo.GetAll().Single();
@@ -47,49 +39,58 @@ public class ImprumutServiceRepositoryConsistencyTests
         Assert.Equal(DateTime.Today, imprumut.DataImprumut.Date);
     }
 
-    // 3️⃣ Carte din împrumut este aceeași instanță
+    /// <summary>
+    /// Verifies that the book stored in the repository
+    /// is the same instance that was borrowed.
+    /// </summary>
     [Fact]
     public void Repo_CarteEsteAceeasiInstanta()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
-        var carte = CarteDisponibila("Unica");
+        var carte = this.CarteDisponibila("Unica");
 
         service.ImprumutaCarti(cititor, new List<Carte> { carte });
 
         Assert.Same(carte, repo.GetAll().Single().Carte);
     }
 
-    // 4️⃣ Cititor din împrumut este aceeași instanță
+    /// <summary>
+    /// Verifies that the reader stored in the repository
+    /// is the same instance that initiated the loan.
+    /// </summary>
     [Fact]
     public void Repo_CititorEsteAceeasiInstanta()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Paul" };
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("C1")
+            this.CarteDisponibila("C1"),
         });
 
         Assert.Same(cititor, repo.GetAll().Single().Cititor);
     }
 
-    // 5️⃣ Ordinea cărților nu afectează repo
+    /// <summary>
+    /// Verifies that the order of books in the request
+    /// does not affect the stored loans.
+    /// </summary>
     [Fact]
     public void Repo_OrdineaCartilorNuConteaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
-        var c1 = CarteDisponibila("A");
-        var c2 = CarteDisponibila("B");
+        var c1 = this.CarteDisponibila("A");
+        var c2 = this.CarteDisponibila("B");
 
         service.ImprumutaCarti(cititor, new List<Carte> { c2, c1 });
 
@@ -99,101 +100,115 @@ public class ImprumutServiceRepositoryConsistencyTests
         Assert.Contains("B", titluri);
     }
 
-    // 6️⃣ Repo gol funcționează
+    /// <summary>
+    /// Verifies that adding a loan to an initially empty repository works correctly.
+    /// </summary>
     [Fact]
     public void Repo_Gol_Functioneaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("C1")
+            this.CarteDisponibila("C1"),
         });
 
         Assert.Single(repo.GetAll());
     }
 
-    // 7️⃣ Repo cu alte cititori nu afectează
+    /// <summary>
+    /// Verifies that existing loans belonging to other readers
+    /// do not affect the current borrowing operation.
+    /// </summary>
     [Fact]
     public void Repo_CuAltiCititori_NuAfecteaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         repo.Add(new Imprumut
         {
             Cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Altul" },
-            Carte = CarteDisponibila("X"),
-            DataImprumut = DateTime.Today.AddDays(-10)
+            Carte = this.CarteDisponibila("X"),
+            DataImprumut = DateTime.Today.AddDays(-10),
         });
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("C1")
+            this.CarteDisponibila("C1"),
         });
 
         Assert.Equal(2, repo.GetAll().Count());
     }
 
-    // 8️⃣ Repo cu alte cărți nu afectează
+    /// <summary>
+    /// Verifies that existing loans for other books
+    /// do not affect borrowing a new book.
+    /// </summary>
     [Fact]
     public void Repo_CuAlteCarti_NuAfecteaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
         repo.Add(new Imprumut
         {
             Cititor = cititor,
-            Carte = CarteDisponibila("Vechi"),
-            DataImprumut = DateTime.Today.AddDays(-20)
+            Carte = this.CarteDisponibila("Vechi"),
+            DataImprumut = DateTime.Today.AddDays(-20),
         });
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("Nou")
+            this.CarteDisponibila("Nou"),
         });
 
         Assert.Equal(2, repo.GetAll().Count());
     }
 
-    // 9️⃣ Repo cu date viitoare este ignorat
+    /// <summary>
+    /// Verifies that loans with future dates in the repository
+    /// do not block new borrowing operations.
+    /// </summary>
     [Fact]
     public void Repo_CuDateViitoare_NuBlocheaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
         repo.Add(new Imprumut
         {
             Cititor = cititor,
-            Carte = CarteDisponibila("Future"),
-            DataImprumut = DateTime.Today.AddDays(10)
+            Carte = this.CarteDisponibila("Future"),
+            DataImprumut = DateTime.Today.AddDays(10),
         });
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("C1")
+            this.CarteDisponibila("C1"),
         });
 
         Assert.Equal(2, repo.GetAll().Count());
     }
 
-    // 🔟 Repo mare (100+) funcționează
+    /// <summary>
+    /// Verifies that borrowing works correctly even when
+    /// the repository already contains a large number of records.
+    /// </summary>
     [Fact]
     public void Repo_Mare_Functioneaza()
     {
         var repo = new FakeRepository<Imprumut>();
-        var service = CreateService(repo);
+        var service = this.CreateService(repo);
 
         var cititor = new Cititor { Id = Guid.NewGuid(), Nume = "Ana" };
 
@@ -202,24 +217,28 @@ public class ImprumutServiceRepositoryConsistencyTests
             repo.Add(new Imprumut
             {
                 Cititor = new Cititor { Id = Guid.NewGuid(), Nume = $"Alt{i}" },
-                Carte = CarteDisponibila($"C{i}"),
-                DataImprumut = DateTime.Today.AddDays(-40)
+                Carte = this.CarteDisponibila($"C{i}"),
+                DataImprumut = DateTime.Today.AddDays(-40),
             });
         }
 
         service.ImprumutaCarti(cititor, new List<Carte>
         {
-            CarteDisponibila("Noua")
+            this.CarteDisponibila("Noua"),
         });
 
         Assert.Equal(121, repo.GetAll().Count());
     }
 
+    /// <summary>
+    /// Verifies that exactly one loan is added to the repository
+    /// when borrowing a single book.
+    /// </summary>
     [Fact]
     public void Repo_AdaugaExactUnImprumut_PentruOCarte()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
         var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
         var carte = new Carte { Titlu = "C", Exemplare = { new Exemplar() } };
@@ -229,11 +248,14 @@ public class ImprumutServiceRepositoryConsistencyTests
         repo.Verify(r => r.Add(It.IsAny<Imprumut>()), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that one loan entry is added for each borrowed book.
+    /// </summary>
     [Fact]
     public void Repo_AdaugaExactTreiImprumuturi_PentruTreiCarti()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
         var cititor = new Cititor { Nume = "Ion", Prenume = "Pop" };
 
@@ -241,22 +263,26 @@ public class ImprumutServiceRepositoryConsistencyTests
         var d2 = new Domeniu { Nume = "BIO" };
 
         var carti = new List<Carte>
-    {
-        new Carte { Titlu = "C1", Domenii = { d1 }, Exemplare = { new Exemplar() } },
-        new Carte { Titlu = "C2", Domenii = { d1 }, Exemplare = { new Exemplar() } },
-        new Carte { Titlu = "C3", Domenii = { d2 }, Exemplare = { new Exemplar() } }
-    };
+        {
+            new Carte { Titlu = "C1", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+            new Carte { Titlu = "C2", Domenii = { d1 }, Exemplare = { new Exemplar() } },
+            new Carte { Titlu = "C3", Domenii = { d2 }, Exemplare = { new Exemplar() } },
+        };
 
         service.ImprumutaCarti(cititor, carti);
 
         repo.Verify(r => r.Add(It.IsAny<Imprumut>()), Times.Exactly(3));
     }
 
+    /// <summary>
+    /// Verifies that the loan date assigned to a new loan
+    /// is set to the current day.
+    /// </summary>
     [Fact]
     public void Repo_ImprumutDataEsteAstazi()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
         Imprumut capturat = null!;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
@@ -270,11 +296,15 @@ public class ImprumutServiceRepositoryConsistencyTests
         Assert.Equal(DateTime.Today, capturat.DataImprumut.Date);
     }
 
+    /// <summary>
+    /// Verifies that the book reference stored in the loan
+    /// is the same reference passed to the service.
+    /// </summary>
     [Fact]
     public void Repo_CarteEsteAceeasiReferinta()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
         Carte capturata = null!;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
@@ -288,11 +318,15 @@ public class ImprumutServiceRepositoryConsistencyTests
         Assert.Same(carte, capturata);
     }
 
+    /// <summary>
+    /// Verifies that the reader reference stored in the loan
+    /// is the same reference passed to the service.
+    /// </summary>
     [Fact]
     public void Repo_CititorEsteAceeasiReferinta()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
         Cititor capturat = null!;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
@@ -306,13 +340,16 @@ public class ImprumutServiceRepositoryConsistencyTests
         Assert.Same(cititor, capturat);
     }
 
+    /// <summary>
+    /// Verifies that a newly created loan has no return date set.
+    /// </summary>
     [Fact]
     public void Repo_ImprumutNou_DataReturnare_EsteNull()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
-        Imprumut capturat = null;
+        Imprumut? capturat = null;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
             .Callback<Imprumut>(i => capturat = i);
 
@@ -321,16 +358,19 @@ public class ImprumutServiceRepositoryConsistencyTests
 
         service.ImprumutaCarti(cititor, new List<Carte> { carte });
 
-        Assert.Null(capturat.DataReturnare);
+        Assert.Null(capturat?.DataReturnare);
     }
 
+    /// <summary>
+    /// Verifies that a newly created loan starts with zero extensions.
+    /// </summary>
     [Fact]
     public void Repo_ImprumutNou_NrPrelungiri_EsteZero()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
-        Imprumut capturat = null;
+        Imprumut? capturat = null;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
             .Callback<Imprumut>(i => capturat = i);
 
@@ -339,16 +379,19 @@ public class ImprumutServiceRepositoryConsistencyTests
 
         service.ImprumutaCarti(cititor, new List<Carte> { carte });
 
-        Assert.Equal(0, capturat.NrPrelungiri);
+        Assert.Equal(0, capturat?.NrPrelungiri);
     }
 
+    /// <summary>
+    /// Verifies that the loan date is not set in the future.
+    /// </summary>
     [Fact]
     public void Repo_DataImprumut_NuEsteInViitor()
     {
         var repo = new Mock<IRepository<Imprumut>>();
-        var service = CreateService(repo.Object);
+        var service = this.CreateService(repo.Object);
 
-        Imprumut capturat = null;
+        Imprumut? capturat = null;
         repo.Setup(r => r.Add(It.IsAny<Imprumut>()))
             .Callback<Imprumut>(i => capturat = i);
 
@@ -357,15 +400,48 @@ public class ImprumutServiceRepositoryConsistencyTests
 
         service.ImprumutaCarti(cititor, new List<Carte> { carte });
 
-        Assert.True(capturat.DataImprumut <= DateTime.Now);
+        Assert.True(capturat?.DataImprumut <= DateTime.Now);
     }
 
+    /// <summary>
+    /// Verifies that extending a null loan throws an <see cref="ArgumentException"/>.
+    /// </summary>
     [Fact]
     public void PrelungesteImprumut_Null_AruncaArgumentException()
     {
-        var service = CreateService(new Mock<IRepository<Imprumut>>().Object);
+        var service = this.CreateService(new Mock<IRepository<Imprumut>>().Object);
 
         Assert.Throws<ArgumentException>(() =>
-            service.PrelungesteImprumut(null));
+            service.PrelungesteImprumut(null!));
+    }
+
+    /// <summary>
+    /// Creates an instance of <see cref="ImprumutService"/>
+    /// using the specified loan repository.
+    /// </summary>
+    /// <param name="repo">The loan repository.</param>
+    /// <returns>An initialized <see cref="ImprumutService"/>.</returns>
+    private ImprumutService CreateService(IRepository<Imprumut> repo)
+    {
+        var carteService = new CarteService(
+            new FakeRepository<Carte>(),
+            new LoggerFactory().CreateLogger<CarteService>());
+
+        var logger = new LoggerFactory().CreateLogger<ImprumutService>();
+
+        return new ImprumutService(repo, logger, carteService);
+    }
+
+    /// <summary>
+    /// Creates a book with at least one available exemplar,
+    /// so it can be borrowed.
+    /// </summary>
+    /// <param name="titlu">The book title.</param>
+    /// <returns>A borrowable book instance.</returns>
+    private Carte CarteDisponibila(string titlu)
+    {
+        var c = new Carte { Titlu = titlu };
+        c.Exemplare.Add(new Exemplar { EsteImprumutat = false, DoarSalaLectura = false });
+        return c;
     }
 }
