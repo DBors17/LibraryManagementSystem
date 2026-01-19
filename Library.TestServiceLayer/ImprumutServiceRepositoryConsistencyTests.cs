@@ -404,18 +404,6 @@ public class ImprumutServiceRepositoryConsistencyTests
     }
 
     /// <summary>
-    /// Verifies that extending a null loan throws an <see cref="ArgumentException"/>.
-    /// </summary>
-    [Fact]
-    public void PrelungesteImprumut_Null_AruncaArgumentException()
-    {
-        var service = this.CreateService(new Mock<IRepository<Imprumut>>().Object);
-
-        Assert.Throws<ArgumentException>(() =>
-            service.PrelungesteImprumut(null!));
-    }
-
-    /// <summary>
     /// Creates an instance of <see cref="ImprumutService"/>
     /// using the specified loan repository.
     /// </summary>

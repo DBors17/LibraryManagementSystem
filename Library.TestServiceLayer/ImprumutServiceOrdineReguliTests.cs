@@ -85,7 +85,7 @@ public class ImprumutServiceOrdineReguliTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, new List<Carte> { carte }));
 
-        Assert.Contains("ultimele", ex.Message);
+        Assert.Contains("analizata", ex.Message);
     }
 
     /// <summary>
@@ -188,7 +188,7 @@ public class ImprumutServiceOrdineReguliTests
         var ex = Assert.Throws<ArgumentException>(() =>
             service.ImprumutaCarti(cititor, new List<Carte> { carte1, carte2, carte3 }));
 
-        Assert.Contains("≥2 domenii", ex.Message);
+        Assert.Contains("cel putin 2 domenii", ex.Message);
     }
 
     /// <summary>

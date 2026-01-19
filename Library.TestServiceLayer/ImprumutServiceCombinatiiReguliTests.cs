@@ -93,7 +93,7 @@ public class ImprumutServiceCombinatiiReguliTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, new () { CarteDisponibila("Noua") }));
 
-        Assert.Contains("ultimele", ex.Message);
+        Assert.Contains("analizata", ex.Message);
     }
 
     /// <summary>
@@ -119,7 +119,7 @@ public class ImprumutServiceCombinatiiReguliTests
         var ex = Assert.Throws<ArgumentException>(() =>
             service.ImprumutaCarti(cititor, carti));
 
-        Assert.Contains("≥2 domenii", ex.Message);
+        Assert.Contains("cel putin 2 domenii", ex.Message);
     }
 
     /// <summary>
@@ -167,7 +167,7 @@ public class ImprumutServiceCombinatiiReguliTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, new () { carte }));
 
-        Assert.Contains("nu poate fi împrumutată", ex.Message);
+        Assert.Contains("nu poate fi imprumutata", ex.Message);
     }
 
     /// <summary>
@@ -227,7 +227,7 @@ public class ImprumutServiceCombinatiiReguliTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, carti));
 
-        Assert.Contains("într-o zi", ex.Message);
+        Assert.Contains("intr-o zi", ex.Message);
     }
 
     /// <summary>
@@ -262,7 +262,7 @@ public class ImprumutServiceCombinatiiReguliTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, carti));
 
-        Assert.Contains("ultimele", ex.Message);
+        Assert.Contains("analizata", ex.Message);
     }
 
     /// <summary>

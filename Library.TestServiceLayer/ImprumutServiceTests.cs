@@ -511,7 +511,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that even if the DELTA rule is satisfied,
+    /// exceeding the maximum daily loans (NCZ) throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DELTAOk_DarDepasesteNCZ_AruncaExceptie()
@@ -538,7 +539,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that even if the daily loan limit (NCZ) is respected,
+    /// violating the DELTA rule throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_NCZOk_DarDELTAIncalcat_AruncaExceptie()
@@ -561,7 +563,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a book from a domain exactly at the allowed limit
+    /// is permitted.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DomeniuExactLaLimita_Trece()
@@ -605,7 +608,9 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that exceeding the maximum number of books from the same domain (D),
+    /// even when the daily limit (NCZ) is respected,
+    /// throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DepasesteD_ChiarDacaNCZEsteOk_AruncaExceptie()
@@ -641,7 +646,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that even if the domain constraint is satisfied,
+    /// violating the DELTA rule throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DomeniuOk_DarDELTAIncalcat_AruncaExceptie()
@@ -665,7 +671,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing succeeds when all business rules are respected.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ToateRegulileRespectate_Trece()
@@ -701,7 +707,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that extending a loan below the allowed extension limit succeeds.
     /// </summary>
     [Fact]
     public void PrelungesteImprumut_SubLimita_Trece()
@@ -740,7 +746,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that extending a loan beyond the allowed extension limit
+    /// throws an exception.
     /// </summary>
     [Fact]
     public void PrelungesteImprumut_PesteLimita_AruncaExceptie()
@@ -778,7 +785,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing exactly the maximum allowed number of books (C)
+    /// is permitted.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExactLaLimitaC_Trece()
@@ -805,7 +813,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing one book more than the allowed limit (C)
+    /// throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_PesteLimitaC_CuUnu_AruncaExceptie()
@@ -828,7 +837,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing is allowed when the number of loans
+    /// reaches exactly the daily limit (NCZ).
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExactNCZ_Trece()
@@ -849,7 +859,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing one additional book beyond the daily limit (NCZ)
+    /// throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_NCZPlusUnu_AruncaExceptie()
@@ -867,7 +878,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing is allowed when the number of loans
+    /// reaches exactly the NMC limit within the configured period.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExactNMCInPerDays_Trece()
@@ -892,7 +904,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing one additional book beyond the NMC limit
+    /// within the configured period throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_NMCPlusUnu_AruncaExceptie()
@@ -916,7 +929,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing the same book exactly after the DELTA interval
+    /// is allowed.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExactDELTA_Trece()
@@ -941,7 +955,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing the same book one day before the DELTA interval
+    /// expires throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DELTAminusUnu_AruncaExceptie()
@@ -964,7 +979,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a book from a domain exactly at the allowed limit (D)
+    /// within the last L months is permitted.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExactLimitaD_Trece()
@@ -993,7 +1009,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a book from a domain beyond the allowed limit (D)
+    /// within the configured time window throws an exception.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_PesteLimitaD_AruncaExceptie()
@@ -1021,7 +1038,9 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when NCZ and NMC rules are satisfied,
+    /// but the DELTA rule is violated,
+    /// a DELTA-related exception is thrown.
     /// </summary>
     [Fact]
     public void NCZ_NMC_Ok_DeltaIncalcat_SeAruncaDELTA()
@@ -1046,7 +1065,9 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when the daily loan limit (NCZ) is violated,
+    /// even if NMC and DELTA rules are satisfied,
+    /// an NCZ-related exception is thrown.
     /// </summary>
     [Fact]
     public void NCZ_Incalcat_NMC_Delta_Ok_SeAruncaNCZ()
@@ -1072,7 +1093,9 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when the NMC rule is violated,
+    /// even if NCZ and DELTA rules are satisfied,
+    /// an NMC-related exception is thrown.
     /// </summary>
     [Fact]
     public void NMC_Incalcat_NCZ_Delta_Ok_SeAruncaNMC()
@@ -1094,11 +1117,13 @@ public class ImprumutServiceTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, new () { CarteDisponibila("Noua") }));
 
-        Assert.Contains("ultimele", ex.Message);
+        Assert.Contains("analizata", ex.Message);
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when the total number of books (C) is within limits
+    /// but the domain constraint is violated,
+    /// a domain-related exception is thrown.
     /// </summary>
     [Fact]
     public void C_Ok_DomeniiInvalide_Delta_Ok_SeAruncaDomenii()
@@ -1119,11 +1144,12 @@ public class ImprumutServiceTests
         var ex = Assert.Throws<ArgumentException>(() =>
             service.ImprumutaCarti(cititor, carti));
 
-        Assert.Contains("≥2 domenii", ex.Message);
+        Assert.Contains("cel putin 2 domenii", ex.Message);
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing an unavailable book throws an exception,
+    /// even if all other borrowing rules are satisfied.
     /// </summary>
     [Fact]
     public void CarteIndisponibila_CuAlteReguliOk_SeAruncaCarte()
@@ -1142,7 +1168,9 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when both the domain constraint is violated
+    /// and the daily loan limit (NCZ) is exceeded,
+    /// the NCZ rule takes precedence.
     /// </summary>
     [Fact]
     public void DomeniiInvalide_SiNCZIncalcat_SeAruncaNCZ()
@@ -1176,7 +1204,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when both the NMC rule and the domain constraint are violated,
+    /// the NMC rule takes precedence.
     /// </summary>
     [Fact]
     public void NMCIncalcat_SiDomeniiInvalide_SeAruncaNMC()
@@ -1206,11 +1235,13 @@ public class ImprumutServiceTests
         var ex = Assert.Throws<InvalidOperationException>(() =>
             service.ImprumutaCarti(cititor, carti));
 
-        Assert.Contains("ultimele", ex.Message);
+        Assert.Contains("analizata", ex.Message);
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when both the DELTA rule is violated
+    /// and the book is unavailable,
+    /// a DELTA-related exception is thrown.
     /// </summary>
     [Fact]
     public void DELTAIncalcat_SiCarteIndisponibila_SeAruncaDELTA()
@@ -1237,7 +1268,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that a non-librarian reader does not bypass
+    /// the daily loan limit (NCZ).
     /// </summary>
     [Fact]
     public void CititorNormal_NuIgnoraNCZ()
@@ -1256,7 +1288,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that extending a loan does not affect the daily loan limit (NCZ).
     /// </summary>
     [Fact]
     public void Prelungire_NuAfecteazaNCZ()
@@ -1287,7 +1319,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that extending a loan does not affect
+    /// the NMC loan count within the configured period.
     /// </summary>
     [Fact]
     public void Prelungire_NuAfecteazaNMC()
@@ -1311,7 +1344,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that loans older than the configured NMC period
+    /// are not counted toward the NMC limit.
     /// </summary>
     [Fact]
     public void ImprumuturiVechi_NuConteazaLaNMC()
@@ -1335,7 +1369,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a book from a different domain
+    /// does not affect the domain limit (D).
     /// </summary>
     [Fact]
     public void DomeniuDiferit_NuAfecteazaLimitaD()
@@ -1362,7 +1397,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a different book does not trigger the DELTA rule.
     /// </summary>
     [Fact]
     public void CarteDiferita_NuActiveazaDELTA()
@@ -1387,7 +1422,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing a single book succeeds.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_OListaCuOCarte_Trece()
@@ -1401,7 +1436,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing two books from different domains succeeds.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DouaCarti_DomeniiDiferite_Trece()
@@ -1428,7 +1463,7 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing three books from two different domains succeeds.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_TreiCarti_DouaDomenii_Trece()
@@ -1451,7 +1486,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that borrowing books from exactly the minimum required
+    /// number of domains succeeds.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_DomeniiExactMinim_Trece()
@@ -1472,7 +1508,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when multiple exemplars exist,
+    /// an available exemplar is selected for borrowing.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExemplareMultiple_AlegeUnulDisponibil()
@@ -1495,7 +1532,8 @@ public class ImprumutServiceTests
     }
 
     /// <summary>
-    /// 
+    /// Verifies that when both reading-room-only and normal exemplars exist,
+    /// a normal exemplar is borrowed.
     /// </summary>
     [Fact]
     public void ImprumutaCarti_ExemplareCuSalaSiNormal_ImprumutaNormal()
@@ -1515,6 +1553,61 @@ public class ImprumutServiceTests
         };
 
         service.ImprumutaCarti(cititor, new List<Carte> { carte });
+    }
+
+    /// <summary>
+    /// Throws ArgumentNullException when reader is null.
+    /// </summary>
+    [Fact]
+    public void ImprumutaCarti_CititorNull_ThrowsArgumentNullException()
+    {
+        var repo = new FakeRepository<Imprumut>();
+        var service = this.CreateService(repo);
+
+        var carti = new List<Carte>
+    {
+        CarteDisponibila("C1"),
+    };
+
+        Assert.Throws<ArgumentNullException>(() =>
+            service.ImprumutaCarti(null, carti));
+    }
+
+    /// <summary>
+    /// Throws ArgumentNullException when book list is null.
+    /// </summary>
+    [Fact]
+    public void ImprumutaCarti_CartiNull_ThrowsArgumentNullException()
+    {
+        var repo = new FakeRepository<Imprumut>();
+        var service = this.CreateService(repo);
+
+        var cititor = new Cititor { Nume = "Ion" };
+
+        Assert.Throws<ArgumentNullException>(() =>
+            service.ImprumutaCarti(cititor, null));
+    }
+
+    /// <summary>
+    /// Throws ArgumentNullException when loan is null.
+    /// </summary>
+    [Fact]
+    public void PrelungesteImprumut_ImprumutNull_ThrowsArgumentNullException()
+    {
+        var imprumutRepoMock = new Mock<IRepository<Imprumut>>();
+        var imprumutLoggerMock = new Mock<ILogger<ImprumutService>>();
+
+        var carteService = new CarteService(
+            new Mock<IRepository<Carte>>().Object,
+            new Mock<ILogger<CarteService>>().Object);
+
+        var service = new ImprumutService(
+            imprumutRepoMock.Object,
+            imprumutLoggerMock.Object,
+            carteService);
+
+        Assert.Throws<ArgumentNullException>(() =>
+            service.PrelungesteImprumut(null));
     }
 
     /// <summary>
