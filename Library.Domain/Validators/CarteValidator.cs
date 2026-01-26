@@ -31,12 +31,12 @@ namespace Library.DomainModel.Validators
 
             if (carte.Domenii == null || carte.Domenii.Count == 0)
             {
-                throw new ArgumentException("Cartea trebuie să aibă cel puțin un domeniu.");
+                throw new ArgumentException("Cartea trebuie să aiba cel putin un domeniu.");
             }
 
             if (carte.Domenii.Any(d => d == null))
             {
-                throw new ArgumentException("Lista de domenii nu poate conține valori null.");
+                throw new ArgumentException("Lista de domenii nu poate contine valori null.");
             }
 
             if (carte.Domenii

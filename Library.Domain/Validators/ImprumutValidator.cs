@@ -20,28 +20,28 @@ namespace Library.DomainModel.Validators
         {
             if (imprumut == null)
             {
-                throw new ValidationException("Imprumut cannot be null.");
+                throw new ValidationException("Imprumut nu poate fi null.");
             }
 
             if (imprumut.Carte == null)
             {
-                throw new ValidationException("Carte is required.");
+                throw new ValidationException("Carte este obligatorie.");
             }
 
             if (imprumut.Cititor == null)
             {
-                throw new ValidationException("Cititor is required.");
+                throw new ValidationException("Cititor este obligatorie.");
             }
 
             if (imprumut.DataReturnare != null &&
                 imprumut.DataReturnare < imprumut.DataImprumut)
             {
-                throw new ValidationException("DataReturnare cannot be before DataImprumut.");
+                throw new ValidationException("DataReturnare nu poate fi inainte de DataImprumut.");
             }
 
             if (imprumut.NrPrelungiri < 0)
             {
-                throw new ValidationException("NrPrelungiri cannot be negative.");
+                throw new ValidationException("NrPrelungiri nu poate fi negativ.");
             }
         }
     }

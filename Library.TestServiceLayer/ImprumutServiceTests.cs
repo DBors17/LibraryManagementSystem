@@ -1570,7 +1570,7 @@ public class ImprumutServiceTests
     };
 
         Assert.Throws<ArgumentNullException>(() =>
-            service.ImprumutaCarti(null, carti));
+            service.ImprumutaCarti(null!, carti));
     }
 
     /// <summary>
@@ -1585,7 +1585,7 @@ public class ImprumutServiceTests
         var cititor = new Cititor { Nume = "Ion" };
 
         Assert.Throws<ArgumentNullException>(() =>
-            service.ImprumutaCarti(cititor, null));
+            service.ImprumutaCarti(cititor, null!));
     }
 
     /// <summary>
@@ -1607,7 +1607,7 @@ public class ImprumutServiceTests
             carteService);
 
         Assert.Throws<ArgumentNullException>(() =>
-            service.PrelungesteImprumut(null));
+            service.PrelungesteImprumut(null!));
     }
 
     /// <summary>

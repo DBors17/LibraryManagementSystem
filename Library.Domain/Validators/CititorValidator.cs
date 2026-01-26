@@ -20,23 +20,23 @@ namespace Library.DomainModel.Validators
         {
             if (cititor == null)
             {
-                throw new ValidationException("Cititor cannot be null.");
+                throw new ValidationException("Cititor nu poate fi null.");
             }
 
             if (string.IsNullOrWhiteSpace(cititor.Nume))
             {
-                throw new ValidationException("Last name is required.");
+                throw new ValidationException("Numele este obligatoriu.");
             }
 
             if (string.IsNullOrWhiteSpace(cititor.Prenume))
             {
-                throw new ValidationException("First name is required.");
+                throw new ValidationException("Prenumele este obligatoriu.");
             }
 
             if (string.IsNullOrWhiteSpace(cititor.Email) &&
                 string.IsNullOrWhiteSpace(cititor.Telefon))
             {
-                throw new ValidationException("At least one contact method is required.");
+                throw new ValidationException("Macar o metoda de contact este obligatorie.");
             }
 
             if (!string.IsNullOrWhiteSpace(cititor.Email))
@@ -45,14 +45,14 @@ namespace Library.DomainModel.Validators
                     cititor.Email.StartsWith("@") ||
                     cititor.Email.EndsWith("@"))
                 {
-                    throw new ValidationException("Invalid email format.");
+                    throw new ValidationException("Email invalid.");
                 }
             }
 
             if (!string.IsNullOrWhiteSpace(cititor.Telefon) &&
                 cititor.Telefon.Length < 6)
             {
-                throw new ValidationException("Invalid phone number.");
+                throw new ValidationException("Telefon invalid.");
             }
         }
     }

@@ -55,7 +55,7 @@ public class CarteService
                 $"O carte nu poate avea mai mult de {this.maxDomenii} domenii.");
         }
 
-        // Verificam relatia stramos–descendent intre domenii
+        // Relatia stramos–descendent
         foreach (var domeniu1 in carte.Domenii)
         {
             foreach (var domeniu2 in carte.Domenii)
